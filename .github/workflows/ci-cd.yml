@@ -62,37 +62,20 @@ jobs:
           ${{ env.BACKEND_IMAGE }}:latest
           ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
 
-  # Local Kubernetes Deployment (Self-hosted runner)
-  deploy:
+  # Build Summary
+  summary:
     needs: [frontend, backend]
-    runs-on: self-hosted
-    if: github.ref == 'refs/heads/main'
-    
+    runs-on: ubuntu-latest
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-
-    - name: Deploy to Local Kubernetes
+    - name: Build Summary
       run: |
-        echo "🚀 Deploying to local Kubernetes cluster..."
-        
-        # Apply secrets first
-        kubectl apply -f k8s/secrets.yaml
-        
-        # Apply all Kubernetes manifests
-        kubectl apply -f k8s/
-        
-        # Update deployments with new image tags
-        kubectl set image deployment/zbot-frontend frontend=${{ env.FRONTEND_IMAGE }}:${{ github.sha }} -n zbot
-        kubectl set image deployment/zbot-backend backend=${{ env.BACKEND_IMAGE }}:${{ github.sha }} -n zbot
-        
-        # Wait for rollout to complete
-        kubectl rollout status deployment/zbot-frontend -n zbot --timeout=300s
-        kubectl rollout status deployment/zbot-backend -n zbot --timeout=300s
-        
-        # Show deployment status
-        echo "📊 Deployment Status:"
-        kubectl get pods -n zbot
-        kubectl get svc -n zbot
-        
-        echo "✅ Deployment completed successfully!"
+        echo "✅ Successfully built and pushed Docker images:"
+        echo "🔹 Frontend: ${{ env.FRONTEND_IMAGE }}:latest"
+        echo "� Frontend: ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}"
+        echo "🔹 Backend: ${{ env.BACKEND_IMAGE }}:latest" 
+        echo "🔹 Backend: ${{ env.BACKEND_IMAGE }}:${{ github.sha }}"
+        echo ""
+        echo "📝 To deploy manually on your Ubuntu machine:"
+        echo "kubectl apply -f k8s/"
+        echo "kubectl set image deployment/zbot-frontend frontend=${{ env.FRONTEND_IMAGE }}:${{ github.sha }} -n zbot"
+        echo "kubectl set image deployment/zbot-backend backend=${{ env.BACKEND_IMAGE }}:${{ github.sha }} -n zbot"
