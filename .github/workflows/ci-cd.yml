@@ -62,64 +62,37 @@ jobs:
           ${{ env.BACKEND_IMAGE }}:latest
           ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
 
-  # Remote Kubernetes Deployment
+  # Local Kubernetes Deployment (Self-hosted runner)
   deploy:
     needs: [frontend, backend]
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     if: github.ref == 'refs/heads/main'
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Setup SSH
-      uses: webfactory/ssh-agent@v0.7.0
-      with:
-        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-    - name: Add remote host to known_hosts
+    - name: Deploy to Local Kubernetes
       run: |
-        mkdir -p ~/.ssh
-        # Disable strict host key checking for this deployment
-        echo "Host ${{ secrets.REMOTE_HOST }}" >> ~/.ssh/config
-        echo "  StrictHostKeyChecking no" >> ~/.ssh/config
-        echo "  UserKnownHostsFile /dev/null" >> ~/.ssh/config
-        chmod 600 ~/.ssh/config
-
-    - name: Test SSH Connection
-      run: |
-        echo "🔍 Testing SSH connection to remote host..."
-        ssh -o ConnectTimeout=10 ${{ secrets.SSH_USER }}@${{ secrets.REMOTE_HOST }} "echo 'SSH connection successful!'"
-
-    - name: Deploy to Remote Kubernetes
-      run: |
-        echo "🚀 Deploying to remote Kubernetes cluster..."
+        echo "🚀 Deploying to local Kubernetes cluster..."
         
-        # Copy deployment files to remote machine
-        scp -r k8s/ ${{ secrets.SSH_USER }}@${{ secrets.REMOTE_HOST }}:~/zbot-deploy/
+        # Apply secrets first
+        kubectl apply -f k8s/secrets.yaml
         
-        # Execute deployment commands on remote machine
-        ssh ${{ secrets.SSH_USER }}@${{ secrets.REMOTE_HOST }} << 'EOF'
-          cd ~/zbot-deploy
-          
-          # Apply secrets first
-          kubectl apply -f k8s/secrets.yaml
-          
-          # Apply all Kubernetes manifests
-          kubectl apply -f k8s/
-          
-          # Update deployments with new image tags
-          kubectl set image deployment/zbot-frontend frontend=${{ env.FRONTEND_IMAGE }}:${{ github.sha }} -n zbot
-          kubectl set image deployment/zbot-backend backend=${{ env.BACKEND_IMAGE }}:${{ github.sha }} -n zbot
-          
-          # Wait for rollout to complete
-          kubectl rollout status deployment/zbot-frontend -n zbot --timeout=300s
-          kubectl rollout status deployment/zbot-backend -n zbot --timeout=300s
-          
-          # Show deployment status
-          echo "📊 Deployment Status:"
-          kubectl get pods -n zbot
-          kubectl get svc -n zbot
-          
-          echo "✅ Deployment completed successfully!"
-        EOF
+        # Apply all Kubernetes manifests
+        kubectl apply -f k8s/
+        
+        # Update deployments with new image tags
+        kubectl set image deployment/zbot-frontend frontend=${{ env.FRONTEND_IMAGE }}:${{ github.sha }} -n zbot
+        kubectl set image deployment/zbot-backend backend=${{ env.BACKEND_IMAGE }}:${{ github.sha }} -n zbot
+        
+        # Wait for rollout to complete
+        kubectl rollout status deployment/zbot-frontend -n zbot --timeout=300s
+        kubectl rollout status deployment/zbot-backend -n zbot --timeout=300s
+        
+        # Show deployment status
+        echo "📊 Deployment Status:"
+        kubectl get pods -n zbot
+        kubectl get svc -n zbot
+        
+        echo "✅ Deployment completed successfully!"
