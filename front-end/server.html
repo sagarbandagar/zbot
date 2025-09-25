@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZBot Server</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 50px;
+            margin: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+        h1 { font-size: 2.5rem; margin-bottom: 20px; }
+        .status { font-size: 1.2rem; margin: 20px 0; }
+        .link { 
+            display: inline-block;
+            background: white;
+            color: #667eea;
+            padding: 15px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            margin: 10px;
+            transition: transform 0.3s ease;
+        }
+        .link:hover { transform: scale(1.05); }
+        .code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 ZBot Development Server</h1>
+        
+        <div class="status">
+            <p>✅ Frontend Server Running</p>
+            <p id="backend-status">⏳ Checking Backend Connection...</p>
+        </div>
+        
+        <div class="code">
+            <strong>Frontend:</strong> http://localhost:3000<br>
+            <strong>Backend:</strong> http://localhost:8000<br>
+            <strong>WebSocket:</strong> ws://localhost:8000/ws
+        </div>
+        
+        <a href="/" class="link">🚀 Open ZBot Chat</a>
+        <a href="http://localhost:8000/docs" class="link" target="_blank">📚 API Docs</a>
+    </div>
+
+    <script>
+        // Check backend status
+        async function checkBackend() {
+            const statusEl = document.getElementById('backend-status');
+            try {
+                const response = await fetch('http://localhost:8000/');
+                if (response.ok) {
+                    statusEl.innerHTML = '✅ Backend Connected (Docker)';
+                    statusEl.style.color = '#4CAF50';
+                } else {
+                    throw new Error('Backend not responding');
+                }
+            } catch (error) {
+                statusEl.innerHTML = '❌ Backend Disconnected - Start Docker Backend';
+                statusEl.style.color = '#f44336';
+            }
+        }
+        
+        checkBackend();
+        setInterval(checkBackend, 5000); // Check every 5 seconds
+    </script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zbot-backend
+  namespace: zbot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zbot-backend
+  template:
+    metadata:
+      labels:
+        app: zbot-backend
+    spec:
+      containers:
+      - name: backend
+        image: sagarbandagar/zbot:backend
+        ports:
+        - containerPort: 8000
+        env:
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: zbot-secrets
+              key: openai-api-key
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zbot-backend-service
+  namespace: zbot
+spec:
+  selector:
+    app: zbot-backend
+  ports:
+  - port: 8000
+    targetPort: 8000
+    nodePort: 30800
+  type: NodePort
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zbot-frontend
+  namespace: zbot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zbot-frontend
+  template:
+    metadata:
+      labels:
+        app: zbot-frontend
+    spec:
+      containers:
+      - name: frontend
+        image: sagarbandagar/zbot:frontend
+        ports:
+        - containerPort: 80
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zbot-frontend-service
+  namespace: zbot
+spec:
+  selector:
+    app: zbot-frontend
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 30080
+  type: NodePort

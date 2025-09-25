@@ -1,0 +1,47 @@
+# Ingress for domain-based access
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: zbot-ingress
+  namespace: zbot
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+spec:
+  ingressClassName: nginx
+  rules:
+  # Replace with your domain or use IP
+  - host: zbot.yourdomain.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: zbot-frontend-service
+            port:
+              number: 80
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: zbot-backend-service
+            port:
+              number: 8000
+  # IP-based access (no domain needed)
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: zbot-frontend-service
+            port:
+              number: 80
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: zbot-backend-service
+            port:
+              number: 8000

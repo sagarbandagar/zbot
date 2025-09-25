@@ -1,0 +1,27 @@
+# LoadBalancer services for internet access
+apiVersion: v1
+kind: Service
+metadata:
+  name: zbot-frontend-loadbalancer
+  namespace: zbot
+spec:
+  selector:
+    app: zbot-frontend
+  ports:
+  - port: 80
+    targetPort: 80
+  type: LoadBalancer
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zbot-backend-loadbalancer
+  namespace: zbot
+spec:
+  selector:
+    app: zbot-backend
+  ports:
+  - port: 8000
+    targetPort: 8000
+  type: LoadBalancer
