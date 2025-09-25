@@ -80,7 +80,16 @@ jobs:
     - name: Add remote host to known_hosts
       run: |
         mkdir -p ~/.ssh
-        ssh-keyscan -H ${{ secrets.REMOTE_HOST }} >> ~/.ssh/known_hosts
+        # Disable strict host key checking for this deployment
+        echo "Host ${{ secrets.REMOTE_HOST }}" >> ~/.ssh/config
+        echo "  StrictHostKeyChecking no" >> ~/.ssh/config
+        echo "  UserKnownHostsFile /dev/null" >> ~/.ssh/config
+        chmod 600 ~/.ssh/config
+
+    - name: Test SSH Connection
+      run: |
+        echo "🔍 Testing SSH connection to remote host..."
+        ssh -o ConnectTimeout=10 ${{ secrets.SSH_USER }}@${{ secrets.REMOTE_HOST }} "echo 'SSH connection successful!'"
 
     - name: Deploy to Remote Kubernetes
       run: |
