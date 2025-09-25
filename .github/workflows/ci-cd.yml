@@ -8,8 +8,8 @@ on:
     branches: [ main ]
 
 env:
-  FRONTEND_IMAGE: sagarbandagar/zbot:frontend
-  BACKEND_IMAGE: sagarbandagar/zbot:backend
+  FRONTEND_IMAGE: sagarbandagar/zbot-frontend
+  BACKEND_IMAGE: sagarbandagar/zbot-backend
 
 jobs:
   # Frontend Build and Deploy
