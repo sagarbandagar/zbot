@@ -2,7 +2,7 @@
 
 A full-stack AI chatbot application with FastAPI backend, HTML/JS frontend, and Kubernetes deployment.
 
-**Latest Update**: Testing CI/CD pipeline with secrets configured! 🚀✅
+**Latest Update**: Docker Hub secrets added, testing full CI/CD pipeline! 🚀✅
 
 ## 🏗️ Architecture
 
